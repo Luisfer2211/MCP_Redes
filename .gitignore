@@ -10,3 +10,5 @@ chatbot/workspace/*
 !chatbot/workspace/.gitkeep
 !chatbot/workspace/demo-repo/.gitkeep
 fittrack-remote/data/
+**/__pycache__/
+*.pyc
