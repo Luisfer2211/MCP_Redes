@@ -124,20 +124,9 @@ Add an entry to your host's MCP server configuration pointing to
 
 Restart the host afterward so it picks up the new server.
 
-## Project status (Phase 1 of 2)
+## Project status
 
-This repository currently covers the **local** version of the custom
-FitTrack MCP server, as required for the first partial delivery of the
-project. Phase 2 will add:
-
-- A **remote** deployment of this same server (cloud service, e.g. Google
-  Cloud Run or Cloudflare Workers), reachable over HTTP instead of stdio.
-- A chatbot (the MCP **host**) that connects to an LLM via its API,
-  maintains conversation context, logs every MCP interaction, and uses this
-  server together with the official Filesystem and Git MCP servers.
-- A Wireshark capture and analysis of the client/remote-server traffic.
-
-See `PHASE2_PLAN.md` for the detailed plan.
+Phase 1 (local MCP server) and Phase 2 (chatbot host, official MCP servers, remote HTTP server) are implemented in this repository. See the root [`README.md`](../README.md) for the full project setup, chatbot, Cloud Run deploy, and documentation.
 
 ## Repository structure
 
@@ -148,7 +137,9 @@ fittrack-mcp/
 ├── .gitignore
 ├── test_client.py          # manual MCP client used to demo/test the server
 ├── server/
-│   └── fittrack_server.py  # the MCP server itself (hand-written JSON-RPC)
+│   ├── fittrack_server.py  # stdio transport entrypoint
+│   ├── protocol.py         # hand-written JSON-RPC dispatch
+│   └── tools.py            # shared business logic
 ├── examples/
 │   └── example_session.md  # sample raw JSON-RPC request/response pairs
 └── data/                   # created at runtime, gitignored
