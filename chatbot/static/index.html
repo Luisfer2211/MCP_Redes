@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FitTrack MCP Host</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header>
+    <div>
+      <h1>FitTrack MCP Host</h1>
+      <p>CC3067 Redes — Web chatbot with DeepSeek + MCP servers</p>
+    </div>
+    <div class="header-actions">
+      <label>
+        FitTrack:
+        <select id="fittrack-mode">
+          <option value="local">Local (stdio)</option>
+          <option value="remote">Remote (Cloud Run)</option>
+        </select>
+      </label>
+      <button id="demo-git-btn" type="button">Run Git Demo</button>
+      <button id="reset-btn" type="button">Reset Session</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="chat-panel">
+      <div id="messages"></div>
+      <form id="chat-form">
+        <input id="user-input" type="text" placeholder="Ask about fitness, or try: Who was Alan Turing?" autocomplete="off" />
+        <button type="submit">Send</button>
+      </form>
+    </section>
+
+    <aside id="log-panel">
+      <h2>MCP Interaction Log</h2>
+      <div id="mcp-log"></div>
+    </aside>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
