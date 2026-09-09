@@ -29,7 +29,12 @@ You have access to MCP tools from multiple servers:
 
 Use tools when the user asks for actions. For general knowledge questions, answer directly.
 When using tools, pick the correct server-prefixed tool name.
-Maintain conversation context across turns."""
+Maintain conversation context across turns.
+Reply in the same language as the user. Format responses with concise GitHub-Flavored
+Markdown when it improves readability: short paragraphs, headings only when useful,
+bulleted or numbered lists for grouped information, tables for comparisons, and fenced
+code blocks for code or structured technical examples. Never wrap the entire response
+in a code block and avoid excessive headings."""
 
 app = FastAPI(title="FitTrack MCP Chatbot Host")
 app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
@@ -38,6 +43,7 @@ app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
 class ChatRequest(BaseModel):
     message: str
     session_id: str | None = None
+    fittrack_mode: str | None = None
 
 
 class ModeRequest(BaseModel):
@@ -45,10 +51,11 @@ class ModeRequest(BaseModel):
 
 
 class SessionState:
-    def __init__(self):
+    def __init__(self, fittrack_mode: str = "local"):
         self.messages: list[dict] = [{"role": "system", "content": SYSTEM_PROMPT}]
         self.mcp_log: list[dict] = []
         self.manager: MCPManager | None = None
+        self.fittrack_mode = fittrack_mode
 
 
 sessions: dict[str, SessionState] = {}
@@ -62,17 +69,22 @@ def get_deepseek() -> DeepSeekClient:
     return deepseek
 
 
-def get_session(session_id: str | None) -> tuple[str, SessionState]:
+def get_session(session_id: str | None, fittrack_mode: str | None = None) -> tuple[str, SessionState]:
+    mode = fittrack_mode if fittrack_mode in ("local", "remote") else "local"
     if session_id and session_id in sessions:
-        return session_id, sessions[session_id]
+        state = sessions[session_id]
+        if fittrack_mode in ("local", "remote"):
+            state.fittrack_mode = fittrack_mode
+        return session_id, state
     sid = session_id or str(uuid.uuid4())
-    state = SessionState()
+    state = SessionState(fittrack_mode=mode)
     sessions[sid] = state
     return sid, state
 
 
 def ensure_manager(state: SessionState) -> MCPManager:
     if state.manager is None:
+        os.environ["FITTRACK_MODE"] = state.fittrack_mode
         state.manager = MCPManager(log_callback=lambda e: state.mcp_log.append(e.to_dict()))
         state.manager.start_all()
     return state.manager
@@ -136,7 +148,7 @@ async def chat(req: ChatRequest):
     if not req.message.strip():
         raise HTTPException(400, "Message cannot be empty")
     try:
-        sid, state = get_session(req.session_id)
+        sid, state = get_session(req.session_id, req.fittrack_mode)
         reply = run_chat_turn(state, req.message.strip())
         return {"session_id": sid, "reply": reply}
     except ValueError as e:
@@ -181,7 +193,7 @@ async def demo_git(session_id: str | None = None):
         "with a short description of the FitTrack MCP project, add it to git, "
         "and commit with message 'Initial commit'. Use the filesystem and git tools."
     )
-    sid, state = get_session(session_id)
+    sid, state = get_session(session_id, "local")
     reply = run_chat_turn(state, prompt)
     return {"session_id": sid, "reply": reply}
 

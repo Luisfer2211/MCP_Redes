@@ -133,7 +133,6 @@ Phase 1 (local MCP server) and Phase 2 (chatbot host, official MCP servers, remo
 ```
 fittrack-mcp/
 ├── README.md
-├── PHASE2_PLAN.md
 ├── .gitignore
 ├── test_client.py          # manual MCP client used to demo/test the server
 ├── server/
